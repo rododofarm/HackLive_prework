@@ -3,12 +3,12 @@ static float bme280_t;
 #include "live.h";
 
 void console_print(const void *argument){
-  wdt_enable(8000);
+  wdt_enable(5000);
   while(1){
     Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " % " + bme280_p/100 + " pa, PM: " + pm1 + " ," + pm25 + " ," + pm10 );
     os_thread_yield();
     delay(1000);
-    wdt_reset();
+    
   }
 }
 
@@ -19,6 +19,7 @@ void read_bme(const void *argument){
     bme280_t=bme.readTemperature();
     bme280_p=bme.readPressure();
     bme280_h=bme.readHumidity();
+    wdt_reset();
     os_thread_yield();
     delay(2000);
   }
@@ -63,7 +64,6 @@ void setup() {
   os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
   os_thread_create(console_print, NULL, OS_PRIORITY_NORMAL, 1024);
 }
-
 
 
 
