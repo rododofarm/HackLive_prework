@@ -1,7 +1,7 @@
 #include "live.h";
-static int pm1,pm25,pm10,bme280_p,bme280_h;
+volatile static int pm1,pm25,pm10,bme280_p,bme280_h;
 static float bme280_t;
-Adafruit_BME280 bme;
+
 
 void console_print(const void *argument){
   while(1){
@@ -11,6 +11,8 @@ void console_print(const void *argument){
 }
 
 void read_bme(const void *argument){
+  Adafruit_BME280 bme;
+  bme.begin();
   while(1){
     bme280_t=bme.readTemperature();
     bme280_p=bme.readPressure();
@@ -53,7 +55,6 @@ void setup() {
   //create many thread
   Serial1.begin(9600);
   Serial.begin(38400);
-  bme.begin();
   os_thread_create(read_g3, NULL, OS_PRIORITY_NORMAL, 1024);
   os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
   os_thread_create(console_print, NULL, OS_PRIORITY_NORMAL, 1024);
@@ -84,7 +85,7 @@ void setup() {
 
 
 
-void loop() {}
+void loop() {delay(1000);}
 // 你只能寫到 87行不能再多了 ....
 //====No Code==== 
 
