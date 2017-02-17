@@ -1,7 +1,7 @@
 #ifndef LIVETOOL
 #define LIVETOOL
 
-#define andlogRead(x) 0;
+#define analogRead(x) 0
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
