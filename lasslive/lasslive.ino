@@ -2,12 +2,11 @@ volatile static int pm1,pm25,pm10,bme280_p,bme280_h;
 static float bme280_t;
 #include "live.h";
 
-
-
 void console_print(const void *argument){
   wdt_enable(8000);
   while(1){
-    Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " %" + bme280_p + " pa, PM: " + pm1 + " ," + pm25 + " ," + pm10 );
+    Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " % " + bme280_p/100 + " pa, PM: " + pm1 + " ," + pm25 + " ," + pm10 );
+    os_thread_yield();
     delay(1000);
     wdt_reset();
   }
@@ -20,6 +19,7 @@ void read_bme(const void *argument){
     bme280_t=bme.readTemperature();
     bme280_p=bme.readPressure();
     bme280_h=bme.readHumidity();
+    os_thread_yield();
     delay(2000);
   }
 }
@@ -50,6 +50,7 @@ void read_g3(const void *argument){
     pm1 = ( buf[10] << 8 ) | buf[11];
     pm25 = ( buf[12] << 8 ) | buf[13];
     pm10 = ( buf[14] << 8 ) | buf[15];
+    os_thread_yield();
     delay(3000);
   }
 }
@@ -62,10 +63,6 @@ void setup() {
   os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
   os_thread_create(console_print, NULL, OS_PRIORITY_NORMAL, 1024);
 }
-
-
-
-
 
 
 
