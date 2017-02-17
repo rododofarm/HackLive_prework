@@ -3,7 +3,6 @@ static float bme280_t;
 #include "live.h";
 
 void console_print(const void *argument){
-  wdt_enable(5000);
   while(1){
     Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " % " + bme280_p/100 + " pa, PM: " + pm1 + " ," + pm25 + " ," + pm10 );
     os_thread_yield();
@@ -60,9 +59,10 @@ void setup() {
   //create many thread
   Serial1.begin(9600);
   Serial.begin(38400);
-  os_thread_create(read_g3, NULL, OS_PRIORITY_NORMAL, 2048);
-  os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 2048);
-  os_thread_create(console_print, NULL, OS_PRIORITY_LOW, 2048);
+  wdt_enable(5000);
+  os_thread_create(read_g3, NULL, OS_PRIORITY_NORMAL, 1024);
+  os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
+  os_thread_create(console_print, NULL, OS_PRIORITY_LOW, 1024);
 }
 
 
