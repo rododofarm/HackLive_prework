@@ -60,9 +60,9 @@ void setup() {
   //create many thread
   Serial1.begin(9600);
   Serial.begin(38400);
-  os_thread_create(read_g3, NULL, OS_PRIORITY_NORMAL, 1024);
-  os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
-  os_thread_create(console_print, NULL, OS_PRIORITY_NORMAL, 1024);
+  os_thread_create(read_g3, NULL, OS_PRIORITY_NORMAL, 2048);
+  os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 2048);
+  os_thread_create(console_print, NULL, OS_PRIORITY_LOW, 2048);
 }
 
 
