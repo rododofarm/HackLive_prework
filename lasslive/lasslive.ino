@@ -1,12 +1,15 @@
-#include "live.h";
 volatile static int pm1,pm25,pm10,bme280_p,bme280_h;
 static float bme280_t;
+#include "live.h";
+
 
 
 void console_print(const void *argument){
+  wdt_enable(8000);
   while(1){
     Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " %" + bme280_p + " pa, PM: " + pm1 + " ," + pm25 + " ," + pm10 );
     delay(1000);
+    wdt_reset();
   }
 }
 
@@ -59,7 +62,6 @@ void setup() {
   os_thread_create(read_bme, NULL, OS_PRIORITY_NORMAL, 1024);
   os_thread_create(console_print, NULL, OS_PRIORITY_NORMAL, 1024);
 }
-
 
 
 

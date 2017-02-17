@@ -1,6 +1,5 @@
 #ifndef LIVETOOL
 #define LIVETOOL
-
 #define analogRead(x) 0
 #include <SPI.h>
 #include <Wire.h>
