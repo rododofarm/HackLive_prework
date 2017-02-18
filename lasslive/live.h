@@ -1,18 +1,13 @@
 #ifndef LIVETOOL
 #define LIVETOOL
-#define analogRead(x) 0
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include "wiring_watchdog.h"
 #include <WiFi.h>
-#include <BlynkSimpleWifi.h>
 #include <PubSubClient.h>
 #include <WiFiUdp.h>
-#include <GTimer.h>
 
 char ssid[] = "Microwind_TWN";      // your network SSID (name)
 char pass[] = "0919734011";     // your network password
@@ -43,7 +38,6 @@ byte ntpRecvBuffer[ NTP_PACKET_SIZE ];
 static  const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31}; // API starts months from 1, this array starts from 0
 uint32_t epochSystem = 0; // timestamp of system boot up
 
-
 // send an NTP request to the time server at the given address
 void retrieveNtpTime() {
   bool hastime = 0;
@@ -52,7 +46,6 @@ void retrieveNtpTime() {
     Udp.beginPacket(ntpServer, 123); //NTP requests are to port 123
     Udp.write(nptSendPacket, NTP_PACKET_SIZE);
     Udp.endPacket();
-    
     if(Udp.parsePacket()) {
       hastime = true;
       Serial.println("NTP packet received");
@@ -73,7 +66,6 @@ void retrieveNtpTime() {
 
 void getCurrentTime(unsigned long epoch, int *year, int *month, int *day, int *hour, int *minute, int *second) {
   int tempDay = 0;
-
   *hour = (epoch  % 86400L) / 3600;
   *minute = (epoch  % 3600) / 60;
   *second = epoch % 60;
@@ -110,7 +102,6 @@ void getCurrentTime(unsigned long epoch, int *year, int *month, int *day, int *h
 }
 
 void initializeWiFi() {
-
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
@@ -121,7 +112,7 @@ void initializeWiFi() {
       Udp.begin(2390);
       byte mac[6];
       WiFi.macAddress(mac);
-      memset(clientId, 0, 16);
+      memset(clientId, 0, sizeof(clientId));
       sprintf(clientId, "FT1_LIVE%02X%02X", mac[4], mac[5]);
       sprintf(outTopic, "LASS/Test/PM25/live");
     }
@@ -133,7 +124,8 @@ void initializeWiFi() {
     if (client.connect(clientId)) {
       Serial.println("connected");
     }
-    delay(100);
+    delay(1000);
+    client.loop();
   }
 }
 
