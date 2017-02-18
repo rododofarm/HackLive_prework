@@ -121,11 +121,11 @@ void initializeWiFi() {
       WiFi.macAddress(mac);
       memset(clientId, 0, 16);
       sprintf(clientId, "FT1_LIVE02X%02X", mac[4], mac[5]);
-      sprintf(outTopic, "LASS/Test/PM25");
+      sprintf(outTopic, "LASS/Test/PM25/live");
     }
   }
 
-  while ((!client.connected()) & status == WL_CONNECTED) {
+  while ((!client.connected()) && status == WL_CONNECTED) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(clientId)) {
