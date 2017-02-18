@@ -51,10 +51,36 @@ void read_bme280(){
   bme280_h = bme.readHumidity();
 }
 
+void sendMQTT() {
+    char payload[300];
+    Serial.println("Sending MQTT");
+    unsigned long epoch = epochSystem + millis() / 1000;
+    int year, month, day, hour, minute, second;
+    getCurrentTime(epoch, &year, &month, &day, &hour, &minute, &second);
+  
+    if (client.connected()) {
+        sprintf(payload, "|ver_format=3|FAKE_GPS=1|app=PM25|ver_app=%s|device_id=%s|date=%4d-%02d-%02d|time=%02d:%02d:%02d|s_d0=%d|s_d1=%d|s_t0=%d|s_h0=%d|gps_lon=%s|gps_lat=%s",
+          "live",
+          clientId,
+          year, month, day,
+          hour, minute, second,
+          pm25,pm10,(int)bme280_t,(int)bme280_h,
+          gps_lon, gps_lat
+        );
+        Serial.println(payload);
+        // Once connected, publish an announcement...
+        client.publish(outTopic, payload);
+      }
+}
+
 void setup() {
   Serial.begin(38400);
   Serial1.begin(9600); // PMS 3003 UART has baud rate 9600
   //Serial.println(F("BME280 test"));
+  initializeMQTT();
+  initializeWiFi();
+  retrieveNtpTime();
+
 
   //===add this section, let bme280 start to work===
   if (!bme.begin()) {
@@ -69,8 +95,10 @@ void setup() {
 void loop() {
   read_g3();
   read_bme280();
-  Serial.println(String("BME280:") + bme280_t + " C " + bme280_h + " % " + bme280_p / 100 + " pa, PM: " + pm25 + " ," + pm10 + " ," + pm100);
-  delay(1000);
+  sendMQTT();
+  //Serial.println(String("BME280:") + bme280_t + " C " + bme280_h + " % " + bme280_p / 100 + " pa, PM: " + pm25 + " ," + pm10 + " ," + pm100);
+  delay(5000);
+  client.loop();
 }
 // 你只能寫到 87行不能再多了 ....
 //====No Code====
