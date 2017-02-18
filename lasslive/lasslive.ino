@@ -82,19 +82,52 @@ void read_g3(const void *argument){
    }
 }
 
+
+void sendMQTT(const void *argument) {
+  // Loop until we're reconnected
+  delay(15000);
+  char payload[300];
+
+  unsigned long epoch = epochSystem + millis() / 1000;
+  int year, month, day, hour, minute, second;
+  getCurrentTime(epoch, &year, &month, &day, &hour, &minute, &second);
+
+  if (client.connected()) {
+      sprintf(payload, "|ver_format=3|FAKE_GPS=1|app=PM25|ver_app=%s|device_id=%s|date=%4d-%02d-%02d|time=%02d:%02d:%02d|device=%s|s_d0=%d|s_d1=%d|gps_lon=%s|gps_lat=%s",
+        clientId,
+        millis(),
+        year, month, day,
+        hour, minute, second,
+        pm25,pm10,
+        gps_lat, gps_lon
+      );
+
+      // Once connected, publish an announcement...
+      client.publish(outTopic, payload);
+    }
+  os_thread_terminate( os_thread_get_id() );
+}
+
+
 void setup() {
   //create many thread
   Serial.begin(38400);
   Serial1.begin(9600);
-  wdt_enable(8000);
-  //hasbme = bme.begin();
+  
+  initializeMQTT();
+  initializeWiFi();
+  retrieveNtpTime();
+  
   if (!bme.begin()) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
-    while (1);
+    hasbme = 0 ;
+  }else{
+    hasbme = 1;
   }
-  hasbme = 1;
+  wdt_enable(8000);
   sema = os_semaphore_create(1);
   os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 4096);
+  os_thread_create(sendMQTT, NULL, OS_PRIORITY_HIGH, 4096);
   //os_thread_create(read_bme, NULL, OS_PRIORITY_REALTIME, 1024);
   //os_thread_create(console_print, NULL, OS_PRIORITY_HIGH, 1024);
 }
@@ -106,6 +139,7 @@ void loop() {
   Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " % " + bme280_p/100 + " pa, PM: " + pm25 + " ," + pm10 );
   os_semaphore_release(sema);
   delay(1000);
+  client.loop();
  }
 // 你只能寫到 87行不能再多了 ....
 //====No Code==== 
