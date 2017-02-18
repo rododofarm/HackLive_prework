@@ -65,6 +65,8 @@ void retrieveNtpTime() {
       unsigned long epoch = secsSince1900 - seventyYears;
   
       epochSystem = epoch - millis() / 1000;
+    }else{
+      delay(2000);
     }
   }
 }

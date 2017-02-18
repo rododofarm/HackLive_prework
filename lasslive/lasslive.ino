@@ -100,8 +100,8 @@ void sendMQTT(const void *argument) {
           clientId,
           year, month, day,
           hour, minute, second,
-          pm25,pm10,bme280_t,bme280_h,
-          gps_lat, gps_lon
+          pm25,pm10,(int)bme280_t,(int)bme280_h,
+          gps_lon, gps_lat
         );
         Serial.println(payload);
         // Once connected, publish an announcement...
@@ -131,8 +131,8 @@ void setup() {
   hasbme =0;
   wdt_enable(8000);
   sema = os_semaphore_create(1);
-  os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 4096);
-  os_thread_create(sendMQTT, NULL, OS_PRIORITY_REALTIME, 4096);
+  os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 2048);
+  os_thread_create(sendMQTT, NULL, OS_PRIORITY_REALTIME, 2048);
   //os_thread_create(read_bme, NULL, OS_PRIORITY_REALTIME, 1024);
   //os_thread_create(console_print, NULL, OS_PRIORITY_HIGH, 1024);
 }
