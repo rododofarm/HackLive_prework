@@ -85,28 +85,31 @@ void read_g3(const void *argument){
 
 void sendMQTT(const void *argument) {
   // Loop until we're reconnected
-  delay(15000);
-  os_semaphore_wait(sema, 0xFFFFFFFF);
-  char payload[300];
-  Serial.println("Sending MQTT");
-  unsigned long epoch = epochSystem + millis() / 1000;
-  int year, month, day, hour, minute, second;
-  getCurrentTime(epoch, &year, &month, &day, &hour, &minute, &second);
-
-  if (client.connected()) {
-      sprintf(payload, "|ver_format=3|FAKE_GPS=1|app=PM25|ver_app=%s|device_id=%s|date=%4d-%02d-%02d|time=%02d:%02d:%02d|s_d0=%d|s_d1=%d|gps_lon=%s|gps_lat=%s",
-        "live",
-        clientId,
-        year, month, day,
-        hour, minute, second,
-        pm25,pm10,
-        gps_lat, gps_lon
-      );
-      Serial.println(payload);
-      // Once connected, publish an announcement...
-      client.publish(outTopic, payload);
-    }
-  os_semaphore_release(sema);
+  while(1){
+    delay(15000);
+    os_semaphore_wait(sema, 0xFFFFFFFF);
+    char payload[300];
+    Serial.println("Sending MQTT");
+    unsigned long epoch = epochSystem + millis() / 1000;
+    int year, month, day, hour, minute, second;
+    getCurrentTime(epoch, &year, &month, &day, &hour, &minute, &second);
+  
+    if (client.connected()) {
+        sprintf(payload, "|ver_format=3|FAKE_GPS=1|app=PM25|ver_app=%s|device_id=%s|date=%4d-%02d-%02d|time=%02d:%02d:%02d|s_d0=%d|s_d1=%d|s_t0=%d|s_h0=%d|gps_lon=%s|gps_lat=%s",
+          "live",
+          clientId,
+          year, month, day,
+          hour, minute, second,
+          pm25,pm10,bme280_t,bme280_h,
+          gps_lat, gps_lon
+        );
+        Serial.println(payload);
+        // Once connected, publish an announcement...
+        client.publish(outTopic, payload);
+      }
+    os_semaphore_release(sema);
+  }
+  //os_thread_terminate( os_thread_get_id() );
 }
 
 

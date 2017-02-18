@@ -120,7 +120,7 @@ void initializeWiFi() {
       byte mac[6];
       WiFi.macAddress(mac);
       memset(clientId, 0, 16);
-      sprintf(clientId, "FT1_LIVE02X%02X", mac[4], mac[5]);
+      sprintf(clientId, "FT1_LIVE%02X%02X", mac[4], mac[5]);
       sprintf(outTopic, "LASS/Test/PM25/live");
     }
   }
@@ -131,6 +131,7 @@ void initializeWiFi() {
     if (client.connect(clientId)) {
       Serial.println("connected");
     }
+    delay(100);
   }
 }
 
