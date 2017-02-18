@@ -8,10 +8,9 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiUdp.h>
-Adafruit_BME280 bme;// I2C
+
 char ssid[] = "Microwind_TWN";      // your network SSID (name)
 char pass[] = "0919734011";     // your network password
-
 char gps_lat[] = "24.7805647";  // device's gps latitude
 char gps_lon[] = "120.9933177"; // device's gps longitude
 char server[] = "gpssensor.ddns.net"; // the MQTT server of LASS
@@ -20,9 +19,8 @@ char outTopic[32] = "";
 
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
-
+Adafruit_BME280 bme;// I2C
 int status = WL_IDLE_STATUS;
-
 WiFiUDP Udp;
 const char ntpServer[] = "123.204.45.116";
 
