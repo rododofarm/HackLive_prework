@@ -3,15 +3,16 @@ static float bme280_t;
 uint32_t sema;
 #include "live.h";
 Adafruit_BME280 bme;
+#include <SoftwareSerial.h>
+SoftwareSerial Serial1(0, 1); // RX, TX
+bool hasbme;
 
 void console_print(const void *argument){
-  
   while(1){
     os_semaphore_wait(sema,0xFFFFFFFF);
     os_semaphore_release(sema);
     os_thread_yield();
     delay(1000);
-    
   }
 }
 
@@ -31,10 +32,12 @@ void read_bme(const void *argument){
 void read_g3(const void *argument){
   while(1){
       os_semaphore_wait(sema,0xFFFFFFFF);
-      bme280_t=bme.readTemperature();
-      bme280_p=bme.readPressure();
-      bme280_h=bme.readHumidity();
-      
+      Serial.println("[READ SENSOR]");
+      if(hasbme){
+        bme280_t=bme.readTemperature();
+        bme280_p=bme.readPressure();
+        bme280_h=bme.readHumidity();
+      }
       wdt_reset();
       unsigned long timeout = millis();
       int count=0;
@@ -80,13 +83,14 @@ void read_g3(const void *argument){
 }
 
 void setup() {
-  wdt_enable(8000);
   //create many thread
-  Serial1.begin(9600);
   Serial.begin(38400);
-  bme.begin();
+  Serial1.begin(9600);
+  wdt_enable(8000);
+  //hasbme = bme.begin();
+  hasbme = 0;
   sema = os_semaphore_create(1);
-  os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 1024);
+  os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 4096);
   //os_thread_create(read_bme, NULL, OS_PRIORITY_REALTIME, 1024);
   //os_thread_create(console_print, NULL, OS_PRIORITY_HIGH, 1024);
 }
@@ -94,7 +98,7 @@ void setup() {
 
 
 void loop() {
-  os_semaphore_wait(sema,0xFFFFFFFF);
+  os_semaphore_wait(sema, 0xFFFFFFFF);
   Serial.println(String("BME280:") + bme280_t +" C " + bme280_h + " % " + bme280_p/100 + " pa, PM: " + pm25 + " ," + pm10 );
   os_semaphore_release(sema);
   delay(1000);

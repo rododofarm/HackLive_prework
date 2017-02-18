@@ -12,6 +12,5 @@
 #include <BlynkSimpleWifi.h>
 #include <PubSubClient.h>
 #include <WiFiUdp.h>
-#include <SoftwareSerial.h>
-SoftwareSerial Serial1(17, 5); // RX, TX
+
 #endif
