@@ -55,10 +55,14 @@ void setup() {
   Serial.begin(38400);
   Serial1.begin(9600); // PMS 3003 UART has baud rate 9600
   //Serial.println(F("BME280 test"));
+
+  //===add this section, let bme280 start to work===
   if (!bme.begin()) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
   }
+  //=======
+  
   Serial.println("OK start");
 }
 

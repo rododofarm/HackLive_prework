@@ -2,7 +2,7 @@ volatile static int pm25,pm10,bme280_p,bme280_h;
 static float bme280_t;
 uint32_t sema;
 #include "live.h";
-Adafruit_BME280 bme;
+Adafruit_BME280 bme;// I2C
 #include <SoftwareSerial.h>
 SoftwareSerial Serial1(0, 1); // RX, TX
 bool hasbme;
@@ -88,7 +88,11 @@ void setup() {
   Serial1.begin(9600);
   wdt_enable(8000);
   //hasbme = bme.begin();
-  hasbme = 0;
+  if (!bme.begin()) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
+  }
+  hasbme = 1;
   sema = os_semaphore_create(1);
   os_thread_create(read_g3, NULL, OS_PRIORITY_HIGH, 4096);
   //os_thread_create(read_bme, NULL, OS_PRIORITY_REALTIME, 1024);
