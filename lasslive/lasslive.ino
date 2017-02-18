@@ -2,26 +2,20 @@ volatile static int pm25,pm10,bme280_p,bme280_h;
 static float bme280_t;
 uint32_t sema;
 #include "live.h";
-Adafruit_BME280 bme;// I2C
 #include <SoftwareSerial.h>
 SoftwareSerial Serial1(0, 1); // RX, TX
-bool hasbme;
-
 void read_sensor(const void *argument){
   while(1){
       os_semaphore_wait(sema,0xFFFFFFFF);
-      Serial.println("[READ SENSOR]");
-      if(hasbme){
-        bme280_t=bme.readTemperature();
-        bme280_p=bme.readPressure();
-        bme280_h=bme.readHumidity();
-      }
+      bme280_t=bme.readTemperature();
+      bme280_p=bme.readPressure();
+      bme280_h=bme.readHumidity();
       wdt_reset();
       unsigned long timeout = millis();
       int count=0;
-      byte incomeByte[24];
-      boolean startcount=false;
-      byte data;
+      byte incomeByte[24],data;
+      bool startcount=false;
+      //byte data;
       while (1){
         if((millis() -timeout) > 1000) {    
           break;
@@ -39,8 +33,7 @@ void read_sensor(const void *argument){
          }
         }
       }
-      unsigned int calcsum = 0; // BM
-      unsigned int exptsum;
+      unsigned int calcsum=0,exptsum=0; // BM
       for(int i = 0; i < 22; i++) {
         calcsum += (unsigned int)incomeByte[i];
       }
@@ -56,29 +49,20 @@ void read_sensor(const void *argument){
 }
 
 void sendMQTT(const void *argument) {
-  // Loop until we're reconnected
   while(1){
     delay(15000);
     os_semaphore_wait(sema, 0xFFFFFFFF);
+    initializeWiFi();
     char payload[300];
-    Serial.println("Sending MQTT");
     unsigned long epoch = epochSystem + millis() / 1000;
     int year, month, day, hour, minute, second;
     getCurrentTime(epoch, &year, &month, &day, &hour, &minute, &second);
     if (client.connected()) {
         sprintf(payload, "|ver_format=3|FAKE_GPS=1|app=PM25|ver_app=%s|device_id=%s|date=%4d-%02d-%02d|time=%02d:%02d:%02d|s_d0=%d|s_d1=%d|s_t0=%d|s_h0=%d|gps_lon=%s|gps_lat=%s",
-          "live",
-          clientId,
-          year, month, day,
-          hour, minute, second,
-          pm25,pm10,(int)bme280_t,(int)bme280_h,
-          gps_lon, gps_lat
-        );
-        Serial.println(payload);
-        // Once connected, publish an announcement...
+          "live",clientId,year, month, day,hour, minute, second,pm25,pm10,(int)bme280_t,(int)bme280_h,gps_lon, gps_lat);
         client.publish(outTopic, payload);
         client.publish("LASS/Test/PM25", payload);
-      }
+    }
     os_semaphore_release(sema);
   }
 }
@@ -88,17 +72,12 @@ void setup() {
   initializeMQTT();
   initializeWiFi();
   retrieveNtpTime();
-  if (!bme.begin()) {
-    hasbme = 0 ;
-  }else{
-    hasbme = 1;
-  }
   wdt_enable(8000);
+  bme.begin();
   sema = os_semaphore_create(1);
   os_thread_create(read_sensor, NULL, OS_PRIORITY_HIGH, 2048);
   os_thread_create(sendMQTT, NULL, OS_PRIORITY_REALTIME, 2048);
 }
-
 void loop() {
   delay(1000);
   client.loop();

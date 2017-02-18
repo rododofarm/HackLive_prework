@@ -8,7 +8,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiUdp.h>
-
+Adafruit_BME280 bme;// I2C
 char ssid[] = "Microwind_TWN";      // your network SSID (name)
 char pass[] = "0919734011";     // your network password
 
@@ -127,6 +127,7 @@ void initializeWiFi() {
     delay(1000);
     client.loop();
   }
+  status = WiFi.status();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
